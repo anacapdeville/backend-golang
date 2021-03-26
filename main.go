@@ -89,14 +89,54 @@ func postApi(c *fiber.Ctx) error {
 	return c.SendString("Hello, World")
 }
 
+func getAll(c *fiber.Ctx) error {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+
+	rows, err := db.Query("SELECT * FROM superhero")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var name string
+		var fullname string
+		var intelligence string
+		var power string
+		var occupation string
+		var image string
+		var group_affiliation interface{}
+		var number_relatives interface{}
+		var uuid interface{}
+
+		err = rows.Scan(&id, &name, &fullname, &intelligence, &power, &occupation, &image, &group_affiliation, &number_relatives, &uuid)
+		
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(id, name, fullname, intelligence, power, occupation, image,group_affiliation, number_relatives, uuid)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		panic(err)
+	}
+	return c.SendString("Hello, World")
+}
+
 func main() {
     app := fiber.New()
 		
 		app.Use(logger.New())
 
-		app.Get("/", func(c *fiber.Ctx) error {
-			return c.SendString("ola")
-		})
+		// app.Get("/", func(c *fiber.Ctx) error {
+		// 	return c.SendString("ola")
+		// })
+
+		app.Get("/", getAll)
 
     app.Post("/new", postApi)
 
