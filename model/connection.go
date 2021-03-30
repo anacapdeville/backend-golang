@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"database/sql"
-
 )
 
 const (

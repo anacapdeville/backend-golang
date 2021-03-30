@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	// "io/ioutil"
-	// "fmt"
+	"fmt"
 	// "github.com/google/uuid"
 	// "reflect"
 	"github.com/anacapdeville/backend-golang/model"
@@ -127,88 +127,46 @@ type Name struct {
 // 	return c.SendString("Hello, World")
 // }
 
-// func getByName(c *fiber.Ctx) error {
-// 	type request struct {
-// 		Name string
-// 	}
-	
-// 	var body request
-
-// 	err := c.BodyParser(&body)
-
-// 	nameOf := Name{
-// 		Name: body.Name,
-// 	}
-	
-// 	type Super struct {
-// 		id int
-// 		name string
-// 		fullname string
-// 		intelligence string
-// 		power string
-// 		occupation string
-// 		image string
-// 		group_affiliation interface{}
-// 		number_relatives interface{}
-// 		uuid interface{}
-// 	}
-
-// 	sqlStatement := `SELECT * FROM superhero WHERE name=$1`
-
-// 	var super Super
-
-// 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-// 	host, port, user, password, dbname)
-
-// 	db, err := sql.Open("postgres", psqlInfo)
-
-// 	row := db.QueryRow(sqlStatement, nameOf.Name)
-
-// 	err = row.Scan(&super.id, &super.name, &super.fullname, &super.intelligence, &super.power, &super.occupation, &super.image, &super.group_affiliation, &super.number_relatives, &super.uuid)
-
-// 	switch err {
-// 	case sql.ErrNoRows:
-// 		fmt.Println("No rows were returned!")
-// 		return c.SendString("No rows")
-// 	case nil:
-// 		fmt.Println(super)
-// 	default:
-// 		panic(err)
-// 	}
-// 	return c.SendString("Hello, World")
-// }
-
-func getByName(c *fiber.Ctx) error {
-	var body Name
-
-	err := c.BodyParser(&body)
-
-	if err != nil {
-		panic(err)
-	}
-	
-	nameOf := Name{
-		Name: body.Name,
-	}
-
-	super, err := model.GetByName(nameOf.Name)
-
-	if err != nil {
-		panic(err)
-	}
-	return super
-}
 
 func main() {
     app := fiber.New()
 		
 		app.Use(logger.New())
 
-		app.Get("/", model.GetAll)
+		app.Get("/", func (c *fiber.Ctx) error {
+			allSupers, err := model.GetAll()
+		
+			fmt.Println(allSupers)
+		
+			if err != nil {
+				return err
+			}
+		
+			return c.Status(fiber.StatusOK).JSON(allSupers)
+		})
 
-		app.Get("/getbyname", getByName)
+		app.Get("/getbyname", func (c *fiber.Ctx) error {
+			var body Name
+		
+			err := c.BodyParser(&body)
+		
+			if err != nil {
+				return err
+			}
+			
+			nameOf := Name{
+				Name: body.Name,
+			}
+		
+			super, err := model.GetByName(nameOf.Name)
+		
+			if err != nil {
+				return err
+			}
+			return c.Status(fiber.StatusOK).JSON(super)
+		})
 
-    // app.Post("/new", postApi)
+    app.Post("/new", model.AddSuper)
 
     app.Listen(":3000")
 }

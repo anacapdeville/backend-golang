@@ -3,29 +3,35 @@ package model
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"net/http"
+	"io/ioutil"
+	"github.com/google/uuid"
+	"reflect"
+	"github.com/gofiber/fiber/v2"
 )
 
 type Hero struct {
-	id int
-	name string
-	fullname string
-	intelligence string
-	power string
-	occupation string
-	image string
-	group_affiliation interface{}
-	number_relatives interface{}
-	uuid interface{}
+	Id int `json:"Id"`
+	Name string `json:"Name"`
+	Fullname string `json:"Fullname"`
+	Intelligence string `json:"Intelligence"`
+	Power string `json:"Power"`
+	Occupation string `json:"Occupation"`
+	Image string `json:"Image"`
+	Group_affiliation interface{} `json:"Group_affiliation"`
+	Number_relatives interface{} `json:"Number_relatives"`
+	Uuid interface{} `json:"Uuid"`
 }
 
 type Request struct {
 	Name string
 }
 
-func GetAll () []Hero {
+func GetAll () ([]Hero, error) {
 	rows, err := Connection().Query("SELECT * FROM superhero")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -46,7 +52,7 @@ func GetAll () []Hero {
 		err = rows.Scan(&id, &name, &fullname, &intelligence, &power, &occupation, &image, &group_affiliation, &number_relatives, &uuid)
 		
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		hero := Hero{id, name, fullname, intelligence, power, occupation, image, group_affiliation, number_relatives, uuid}
@@ -55,20 +61,22 @@ func GetAll () []Hero {
 	}
 	err = rows.Err()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return heros
+	return heros, nil
 }
 
 func GetByName (name string) (*Hero, error) {
 	sqlStatement := `SELECT * FROM superhero WHERE name=$1`
 
-	var super *Hero
+	super := &Hero{}
 
 	row := Connection().QueryRow(sqlStatement, name)
 
-	err := row.Scan(&super.id, &super.name, &super.fullname, &super.intelligence, &super.power, &super.occupation, &super.image, &super.group_affiliation, &super.number_relatives, &super.uuid)
+	err := row.Scan(&super.Name, &super.Fullname, &super.Intelligence, &super.Power, &super.Occupation, &super.Image, &super.Group_affiliation, &super.Number_relatives, &super.Uuid)
+
+	fmt.Println(super)
 
 	switch err {
 	case sql.ErrNoRows:
@@ -76,6 +84,59 @@ func GetByName (name string) (*Hero, error) {
 	case nil:
 		return super, nil
 	default:
+		return nil, err
+	}
+}
+
+func AddSuper (c *fiber.Ctx) error {	
+	var body Request
+
+	err := c.BodyParser(&body)
+	
+	if err != nil {
+		return err
+	}
+
+	newName := Request{
+		Name: body.Name,
+	}
+	
+	res, err := http.Get("https://www.superheroapi.com/api.php/4329276143753700/search/" + newName.Name)
+
+	if err != nil {
+		return err
+	}
+
+	data, _ := ioutil.ReadAll( res.Body )
+	
+	res.Body.Close()
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+
+	if err != nil {
 		panic(err)
 	}
+	defer db.Close()
+
+	sqlStatement := `
+	INSERT INTO superhero (name, fullname, intelligence, power, occupation, image, uuid)
+	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	RETURNING uuid`
+
+	uuid := uuid.New().String()
+
+	err = db.QueryRow(sqlStatement, "carla", "carla smith", "38", "34", "teacher", "..", uuid).Scan(&uuid)
+	
+	if err != nil {
+		return err
+	}
+	
+	fmt.Printf("%s\n", data)
+	
+	fmt.Printf(reflect.TypeOf(data).String())
+
+	return c.Status(fiber.StatusOK).JSON("Uuid inserted:" + uuid)
 }
