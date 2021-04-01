@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"io/ioutil"
 	"github.com/google/uuid"
-	// "reflect"
 	"github.com/gofiber/fiber/v2"
 	"encoding/json"
 	"strings"
@@ -59,7 +58,9 @@ func GetAll () ([]Hero, error) {
 
 		heros = append(heros, hero)
 	}
+
 	err = rows.Err()
+
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +96,6 @@ func GetByUuid (uuid string) (*Hero, error) {
 
 	err := row.Scan(&super.Uuid, &super.Name, &super.Fullname, &super.Intelligence, &super.Power, &super.Occupation, &super.Image, &super.Group_affiliation, &super.Number_relatives)
 	
-	fmt.Println(super)
-
 	switch err {
 	case sql.ErrNoRows:
 		return nil, errors.New("Super não encontrado")
@@ -197,7 +196,6 @@ func AddSuper (c *fiber.Ctx) error {
 	relatives := dataStruct.Results[0].Connections.Relatives
 	arrayRelatives := strings.Split(relatives, ",")
 	numberRelatives := len(arrayRelatives)
-	fmt.Println(arrayRelatives)
 
 	sqlStatement := `
 	INSERT INTO superhero (name, fullname, intelligence, power, occupation, image, uuid, group_affiliation, number_relatives)
