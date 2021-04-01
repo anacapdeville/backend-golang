@@ -3,7 +3,6 @@ package model
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"io/ioutil"
 	"github.com/google/uuid"

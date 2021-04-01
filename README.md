@@ -14,11 +14,11 @@ Essa api permite adicionar em um banco de dados dados de um super herói/vilão 
 Na raiz do projeto está disponível o arquivo super.sql que tem o código para gerar o banco de dados utilizado. Após gerar o banco de dados, use o código disponível dentro do arquivo superhero.sql para gerar a tabela. Para que a conexão com o banco de dados seja feita acesse o arquivo connection.go na pasta model e modifique os seguintes dados de acordo com seus parâmetros: host, port, user, password.
 
 Os endpoints disponíveis são:
-- "/new" - adiciona um super. O nome do super deve ser fornecido no body da requisição como Name.
-- "/" - retorna todos os supers cadastrados;
-- "/getbyname/:name" - retorna o super que tem o nome fornecido;
-- "/getbyuuid/:uuid" - retorna o super que tem o uuid fornecido;
-- "/delete/:uuid" - deleta o super que tem o uuid fornecido.
+- "/new" - POST - adiciona um super. O nome do super deve ser fornecido no body da requisição como Name.
+- "/" - GET - retorna todos os supers cadastrados;
+- "/getbyname/:name" - GET - retorna o super que tem o nome fornecido;
+- "/getbyuuid/:uuid" - GET - retorna o super que tem o uuid fornecido;
+- "/delete/:uuid" - DELETE - deleta o super que tem o uuid fornecido.
 
 ## Tecnologias
 - Go versão 1.16.2;
