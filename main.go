@@ -1,16 +1,9 @@
 package main
 
 import (
-	// "database/sql"
 	_ "github.com/lib/pq"
-	// "net/http"
-	// "log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	// "io/ioutil"
-	"fmt"
-	// "github.com/google/uuid"
-	// "reflect"
 	"github.com/anacapdeville/backend-golang/model"
 )
 
@@ -30,8 +23,6 @@ func main() {
 		app.Get("/", func (c *fiber.Ctx) error {
 			allSupers, err := model.GetAll()
 		
-			fmt.Println(allSupers)
-		
 			if err != nil {
 				return err
 			}
@@ -39,18 +30,9 @@ func main() {
 			return c.Status(fiber.StatusOK).JSON(allSupers)
 		})
 
+		app.Delete("/delete/:uuid", model.DeleteSuper)
+
 		app.Get("/getbyname/:name", func (c *fiber.Ctx) error {
-			// var body Name
-		
-			// err := c.BodyParser(&body)
-		
-			// if err != nil {
-			// 	return err
-			// }
-			
-			// nameOf := Name{
-			// 	Name: body.Name,
-			// }
 
 			name := c.Params("name")
 		
@@ -63,21 +45,9 @@ func main() {
 		})
 
 		app.Get("/getbyuuid/:uuid", func (c *fiber.Ctx) error {
-			// var body Uuid
-		
-			// err := c.BodyParser(&body)
-		
-			// if err != nil {
-			// 	return err
-			// }
-			
-			// uuidOf := Uuid{
-			// 	Uuid: body.Uuid,
-			// }
-
 			uuid := c.Params("uuid")
 		
-			super, err := model.GetByName(uuid)
+			super, err := model.GetByUuid(uuid)
 		
 			if err != nil {
 				return err

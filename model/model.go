@@ -199,17 +199,6 @@ func AddSuper (c *fiber.Ctx) error {
 	numberRelatives := len(arrayRelatives)
 	fmt.Println(arrayRelatives)
 
-
-	// psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-	// host, port, user, password, dbname)
-
-	// db, err := sql.Open("postgres", psqlInfo)
-
-	// if err != nil {
-	// 	return err
-	// }
-	// defer db.Close()
-
 	sqlStatement := `
 	INSERT INTO superhero (name, fullname, intelligence, power, occupation, image, uuid, group_affiliation, number_relatives)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -226,12 +215,18 @@ func AddSuper (c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON("Uuid inserted:" + uuid)
 }
 
-// func DeleteSuper (uuid string) {
-// 	sqlStatement := `
-// DELETE FROM users
-// WHERE id = $1;`
-// _, err = db.Exec(sqlStatement, 1)
-// if err != nil {
-//   panic(err)
-// }
-// }
+func DeleteSuper (c *fiber.Ctx) error {
+	uuid := c.Params("uuid")
+
+	sqlStatement := `
+	DELETE FROM superhero
+	WHERE uuid = $1;`
+
+	_, err := Connection().Query(sqlStatement, uuid)
+
+	if err != nil {
+  	return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(uuid + " deletado")
+}
